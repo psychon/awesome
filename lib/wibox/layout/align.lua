@@ -16,8 +16,6 @@ local align = {}
 
 --- Calculate the layout of an align layout.
 -- @param context The context in which we are drawn.
--- @param wibox The wibox that this widget is drawn to.
--- @param cr The cairo context to use.
 -- @param width The available width.
 -- @param height The available height.
 function align:layout(context, width, height)
