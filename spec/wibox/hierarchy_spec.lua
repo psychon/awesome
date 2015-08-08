@@ -30,8 +30,9 @@ describe("wibox.hierarchy", function()
         local widget, instance
         before_each(function()
             local function nop() end
+            local context = {}
             widget = make_widget(nil)
-            instance = hierarchy.new(widget, 10, 20, nop, nop)
+            instance = hierarchy.new(context, widget, 10, 20, nop, nop)
         end)
 
         it("get_parent", function()
@@ -105,7 +106,8 @@ describe("wibox.hierarchy", function()
                 error("Unknown widget")
             end
         end
-        local instance = hierarchy.new(parent, 15, 20, redraw, layout)
+        local context = {}
+        local instance = hierarchy.new(context, parent, 15, 20, redraw, layout)
 
         -- There should be a connection
         parent:emit_signal("widget::redraw_needed")
@@ -142,7 +144,8 @@ describe("wibox.hierarchy", function()
             })
 
             local function nop() end
-            hierarchy_parent = hierarchy.new(parent, 15, 16, nop, nop)
+            local context = {}
+            hierarchy_parent = hierarchy.new(context, parent, 15, 16, nop, nop)
 
             -- This also tests get_children
             local children = hierarchy_parent:get_children()
@@ -222,11 +225,13 @@ describe("wibox.hierarchy", function()
                 make_child(intermediate, 5, 2, cairo.Matrix.create_translate(4, 0))
             })
 
-            instance = hierarchy.new(parent, 15, 16, nop, nop)
+            local context = {}
+            instance = hierarchy.new(context, parent, 15, 16, nop, nop)
         end)
 
         it("No difference", function()
-            local instance2 = hierarchy.new(parent, 15, 16, nop, nop)
+            local context = {}
+            local instance2 = hierarchy.new(context, parent, 15, 16, nop, nop)
             local region = instance:find_differences(instance2)
             assert.is.equal(region:num_rectangles(), 0)
         end)
@@ -235,7 +240,8 @@ describe("wibox.hierarchy", function()
             intermediate._layout_cache.get = function()
                 return { make_child(child, 10, 20, cairo.Matrix.create_translate(0, 4)) }
             end
-            local instance2 = hierarchy.new(parent, 15, 16, nop, nop)
+            local context = {}
+            local instance2 = hierarchy.new(context, parent, 15, 16, nop, nop)
             local region = instance:find_differences(instance2)
             assert.is.equal(region:num_rectangles(), 1)
             local rect = region:get_rectangle(0)

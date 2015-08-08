@@ -112,7 +112,6 @@ draw_hierarchy = function(arg, cr, hierarchy, dirty_area)
     end
 
     cr:restore()
->>>>>>> WIP: Big code drop
 end
 
 local function do_redraw(self)
@@ -128,7 +127,7 @@ local function do_redraw(self)
         self._need_relayout = false
         local old_hierarchy = self._widget_hierarchy
         self._widget_hierarchy = self.widget and
-            hierarchy.new(self.widget, width, height, self._redraw_callback, self._layout_callback)
+            hierarchy.new(get_widget_context(self), self.widget, width, height, self._redraw_callback, self._layout_callback)
 
         if old_hierarchy == nil or self._widget_hierarchy == nil or self._need_complete_repaint then
             self._need_complete_repaint = false

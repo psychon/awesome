@@ -15,6 +15,7 @@ local cairo = require("lgi").cairo
 local hierarchy = {}
 
 --- Create a new widget hierarchy that has no parent.
+-- @param context The context in which we are laid out.
 -- @param widget The widget that is at the base of the hierarchy.
 -- @param width The available width for this hierarchy
 -- @param height The available height for this hierarchy
@@ -23,8 +24,9 @@ local hierarchy = {}
 -- @param layout_callback Callback that is called with the corresponding widget
 --        hierarchy on widget::layout_changed on some widget.
 -- @return A new widget hierarchy
-function hierarchy.new(widget, width, height, redraw_callback, layout_callback)
-    local children = widget._layout_cache:get(width, height)
+function hierarchy.new(context, widget, width, height, redraw_callback, layout_callback)
+    if type(width) ~= "number" then print(widget, type(width), debug.traceback()) end
+    local children = widget._layout_cache:get(context, width, height)
     local draws_x1, draws_y1, draws_x2, draws_y2 = 0, 0, width, height
     local result = {
         _parent = nil,
@@ -44,7 +46,8 @@ function hierarchy.new(widget, width, height, redraw_callback, layout_callback)
     widget:weak_connect_signal("widget::layout_changed", result._layout)
 
     for _, w in ipairs(children or {}) do
-        local r = hierarchy.new(w._widget, w._width, w._height, redraw_callback, layout_callback)
+    if type(w._width) ~= "number" then print(widget, type(w._width), debug.traceback()) end
+        local r = hierarchy.new(context, w._widget, w._width, w._height, redraw_callback, layout_callback)
         r._matrix = w._matrix
         r._parent = result
         table.insert(result._children, r)

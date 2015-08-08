@@ -5,6 +5,7 @@
 -- @module wibox.widget.base
 ---------------------------------------------------------------------------
 
+local traceback = debug.traceback
 local debug = require("gears.debug")
 local object = require("gears.object")
 local cache = require("gears.cache")
@@ -32,6 +33,7 @@ end
 -- @param height The available height for the widget
 -- @return The width and height that the widget wants to use
 function base.fit_widget(context, widget, width, height)
+    if height == nil then print(traceback()) end
     -- Sanitize the input. This also filters out e.g. NaN.
     local width = math.max(0, width)
     local height = math.max(0, height)
@@ -270,7 +272,7 @@ function base.make_widget(proxy, widget_name)
 
     if proxy then
         ret.fit = function(_, ...) return proxy._fit_geometry_cache:get(...) end
-        ret.layout = function(_, width, height)
+        ret.layout = function(_, context, width, height)
             return { base.place_widget_at(proxy, 0, 0, width, height) }
         end
         proxy:connect_signal("widget::layout_changed", function()
@@ -287,13 +289,13 @@ function base.make_widget(proxy, widget_name)
             return ret:layout(...)
         end
     end
-    local function fit_cb(width, height)
+    local function fit_cb(context, width, height)
         local w, h = 0, 0
         if ret.fit then
-            w, h = ret:fit(width, height)
+            w, h = ret:fit(context, width, height)
         else
             -- If it has no fit method, calculate based on the size of children
-            local children = ret._layout_cache:get(width, height)
+            local children = ret._layout_cache:get(context, width, height)
             for _, info in ipairs(children or {}) do
                 local x, y, w2, h2 = matrix.transform_rectangle(info._matrix,
                     0, 0, info._width, info._height)

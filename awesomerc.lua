@@ -205,7 +205,7 @@ function animation(child_widget, time, scale, fps)
         cr:paint_with_alpha(1 - get_animation_stage())
     end
     -- Our child is placed so that it larger than this widget itself!
-    widget.layout = function(_, width, height)
+    widget.layout = function(_, context, width, height)
         -- Get the squared stage for better looking animation
         local stage = get_animation_stage()
         stage = stage * stage

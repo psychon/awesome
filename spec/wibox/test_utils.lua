@@ -45,7 +45,7 @@ local function widget_layout(state, arguments)
     local widget = arguments[1]
     local given = arguments[2]
     local expected = arguments[3]
-    local children = widget.layout and widget:layout(given[1], given[2]) or {}
+    local children = widget.layout and widget:layout({ "fake context" }, given[1], given[2]) or {}
 
     local fits = true
     if #children ~= #expected then
