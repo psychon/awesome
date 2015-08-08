@@ -25,7 +25,7 @@ local function transform(layout, width, height)
 end
 
 --- Draw this layout
-function rotate:draw(wibox, cr, width, height)
+function rotate:draw(context, cr, width, height)
     if not self.widget then return { width = 0, height = 0 } end
 
     local dir = self:get_direction()
@@ -43,7 +43,7 @@ function rotate:draw(wibox, cr, width, height)
 
     -- Since we rotated, we might have to swap width and height.
     -- transform() does that for us.
-    base.draw_widget(wibox, cr, self.widget, 0, 0, transform(self, width, height))
+    base.draw_widget(context, cr, self.widget, 0, 0, transform(self, width, height))
 end
 
 --- Fit this layout into the given area

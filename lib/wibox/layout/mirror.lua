@@ -16,10 +16,10 @@ local widget_base = require("wibox.widget.base")
 local mirror = { mt = {} }
 
 --- Draw this layout
-function mirror:draw(wibox, cr, width, height)
+function mirror:draw(context, cr, width, height)
     if not self.widget then return { width = 0, height = 0 } end
     if not self.horizontal and not self.vertical then
-        self.widget:draw(wibox, cr, width, height)
+        self.widget:draw(context, cr, width, height)
         return -- nothing changed
     end
 
@@ -38,7 +38,7 @@ function mirror:draw(wibox, cr, width, height)
     cr:translate(t.x, t.y)
     cr:scale(s.x, s.y)
 
-    self.widget:draw(wibox, cr, width, height)
+    self.widget:draw(context, cr, width, height)
 
     -- Undo the scale and translation from above.
     cr:restore()
