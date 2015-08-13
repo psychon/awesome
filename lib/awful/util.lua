@@ -22,6 +22,8 @@ local pairs = pairs
 local string = string
 local lgi = require("lgi")
 local Pango = lgi.Pango
+local Gio = lgi.Gio
+local GLib = lgi.GLib
 local capi =
 {
     awesome = awesome,
@@ -108,6 +110,61 @@ function util.spawn_with_shell(cmd, sn)
         cmd = { util.shell, "-c", cmd }
         return util.spawn(cmd, sn)
     end
+end
+
+--- Spawn a program and asynchronously capture its output line by line.
+-- @tparam string|table cmd The command.
+-- @tparam function line_callback Function to call with each line of output.
+-- @tparam[opt] function done_callback Function to call when no more output is
+-- produced.
+-- @treturn[1] integer The forked PID.
+-- @treturn[2] string Error message.
+function util.spawn_with_lines(cmd, line_callback, done_callback)
+    -- Spawn without startup notification and with returning a pipe for stdout
+    local pid, _, _, stdout, _ = capi.awesome.spawn(cmd, false, false, true, false)
+    if type(pid) == "string" then
+        -- Error
+        return pid
+    end
+
+    local stream = Gio.DataInputStream.new(Gio.UnixInputStream.new(stdout, true))
+    local function done()
+        stream:close()
+        if done_callback then
+            xpcall(done_callback, function(err)
+                print(debug.traceback("Error while calling done_callback in spawn_with_lines: "
+                        .. tostring(err), 2))
+            end)
+        end
+    end
+    local start_read, finish_read
+    start_read = function()
+        stream:read_line_async(GLib.PRIORITY_DEFAULT, nil, finish_read)
+    end
+    finish_read = function(obj, res)
+        local line, length = obj:read_line_finish(res)
+        if type(length) ~= "number" then
+            -- Error
+            print("Error in awful.util.spawn_with_lines: ", tostring(length))
+            done()
+        elseif #line ~= length then
+            -- End of file
+            done()
+        else
+            -- Read a line
+            xpcall(function()
+                -- This needs tostring() for older lgi versions which returned
+                -- "GLib.Bytes" instead of Lua strings (I guess)
+                line_callback(tostring(line))
+            end, function(err)
+                print(debug.traceback("Error while calling line_callback in spawn_with_lines: "
+                        .. tostring(err), 2))
+            end)
+            start_read()
+        end
+    end
+    start_read()
+    return pid
 end
 
 --- Read a program output and returns its output as a string.
