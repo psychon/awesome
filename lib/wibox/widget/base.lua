@@ -165,22 +165,21 @@ widget. The arguments to this function is the available space and it should
 return its desired size. Note that this function only provides a hint which is
 not necessarily followed. The widget must also be able to draw itself at
 different sizes than the one requested.
-<pre><code>function widget:fit(width, height)
+<pre><code>function widget:fit(context, width, height)
   -- Find the maximum square available
   local m = math.min(width, height)
   return m, m
 end</code></pre>
 
 The next callback is :draw. As the name suggests, this function is called to
-draw the widget. The arguments to this widget are the wibox that the widget is
-drawn to (or nil if it is not currently being drawn to a wibox), the cairo
-context on which it should be drawn and the widget's size. The cairo context is
-set up in such a way that the widget as its top-left corner at (0, 0) and its
-bottom-right corner at (width, height). In other words, no special
-transformation needs to be done. Note that during this callback a suitable clip
-will already be applied to the cairo context so that this callback will not be
-able to draw outside of the area that was registered for the widget by the
-layout that placed this widget. You should not call
+draw the widget. The arguments to this widget are the context that the widget is
+drawn in, the cairo context on which it should be drawn and the widget's size.
+The cairo context is set up in such a way that the widget as its top-left corner
+at (0, 0) and its bottom-right corner at (width, height). In other words, no
+special transformation needs to be done. Note that during this callback a
+suitable clip will already be applied to the cairo context so that this callback
+will not be able to draw outside of the area that was registered for the widget
+by the layout that placed this widget. You should not call
 <code>cr:reset_clip()</code>, as redraws will not be handled correctly in this
 case.
 <pre><code>function widget:draw(wibox, cr, width, height)
@@ -222,10 +221,10 @@ end</code></pre>
 
 Finally, if you want to influence how children are drawn, there are four
 callbacks available that all get similar arguments:
-<pre><code>function widget:before_draw_children(wibox, cr, width, height)
-function widget:after_draw_children(wibox, cr, width, height)
-function widget:before_draw_child(child, wibox, cr, width, height)
-function widget:after_draw_child(child, wibox, cr, width, height)</code></pre>
+<pre><code>function widget:before_draw_children(context, cr, width, height)
+function widget:after_draw_children(context, cr, width, height)
+function widget:before_draw_child(context, index, child, cr, width, height)
+function widget:after_draw_child(context, index, child, cr, width, height)</code></pre>
 
 All of these are called with the same arguments as the :draw() method. Please
 note that a larger clip will be active during these callbacks that also contains
@@ -246,12 +245,12 @@ looks like this:
 <pre><code>widget:draw(wibox, cr, width, height)
 widget:before_draw_children(wibox, cr, width, height)
 for child do
-    widget:before_draw_child(child, wibox, cr, width, height)
+    widget:before_draw_child(wibox, cr, child_index, child, width, height)
     cr:save()
     -- Draw child and all of its children recursively, taking into account the
     -- position and size given to base.place_widget_at() in :layout().
     cr:restore()
-    widget:after_draw_child(child, wibox, cr, width, height)
+    widget:after_draw_child(wibox, cr, child_index, child, width, height)
 end
 widget:after_draw_children(wibox, cr, width, height)</code></pre>
 @param proxy If this is set, the returned widget will be a proxy for this
