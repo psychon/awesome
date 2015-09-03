@@ -64,60 +64,6 @@ local function get_widget_context(self)
     return context
 end
 
-local draw_hierarchy
-draw_hierarchy = function(arg, cr, hierarchy, dirty_area)
-    local widget = hierarchy:get_widget()
-    if not widget.visible then
-        return
-    end
-
-    cr:save()
-    cr:transform(hierarchy:get_matrix_to_parent())
-
-    -- Get the hierarchy's extension in device coordinates
-    local x, y, width, height = base.rect_to_device_geometry(cr, hierarchy:get_draw_extents())
-
-    -- Are we outside of the dirty area?
-    local rect = cairo.RectangleInt{ x = x, y = y, width = width, height = height }
-    if dirty_area:contains_rectangle(rect) ~= "OUT" then
-        local function call(func, extra_arg)
-            if not func then return end
-            local function error_function(err)
-                print(debug.traceback("Error while drawing widget: " .. tostring(err), 2))
-            end
-            if not extra_arg then
-                xpcall(function()
-                    func(widget, arg, cr, hierarchy:get_size())
-                end, error_function)
-            else
-                xpcall(function()
-                    func(widget, extra_arg, arg, cr, hierarchy:get_size())
-                end, error_function)
-            end
-        end
-
-        -- Draw the widget
-        cr:save()
-        cr:rectangle(0, 0, hierarchy:get_size())
-        cr:clip()
-        call(widget.draw)
-        cr:restore()
-
-        -- Draw its children
-        cr:rectangle(hierarchy:get_draw_extents())
-        cr:clip()
-        call(widget.before_draw_children)
-        for _, wi in ipairs(hierarchy:get_children()) do
-            call(widget.before_draw_child, wi:get_widget())
-            draw_hierarchy(arg, cr, wi, dirty_area)
-            call(widget.after_draw_child, wi:get_widget())
-        end
-        call(widget.after_draw_children)
-    end
-
-    cr:restore()
-end
-
 local function do_redraw(self)
     local surf = surface(self.drawable.surface)
     -- The surface can be nil if the drawable's parent was already finalized
@@ -144,15 +90,14 @@ local function do_redraw(self)
     end
 
     -- Clip to the dirty area
-    local dirty = self._dirty_area
-    self._dirty_area = cairo.Region.create()
-    if dirty:is_empty() then
+    if self._dirty_area:is_empty() then
         return
     end
-    for i = 0, dirty:num_rectangles() - 1 do
-        local rect = dirty:get_rectangle(i)
+    for i = 0, self._dirty_area:num_rectangles() - 1 do
+        local rect = self._dirty_area:get_rectangle(i)
         cr:rectangle(rect.x, rect.y, rect.width, rect.height)
     end
+    self._dirty_area = cairo.Region.create()
     cr:clip()
 
     -- Draw the background
@@ -181,7 +126,7 @@ local function do_redraw(self)
     -- Draw the widget
     if self._widget_hierarchy then
         cr:set_source(self.foreground_color)
-        draw_hierarchy(get_widget_context(self), cr, self._widget_hierarchy, dirty)
+        self._widget_hierarchy:draw(get_widget_context(self), cr)
     end
 
     self.drawable:refresh()

@@ -207,6 +207,68 @@ function hierarchy:find_differences(other)
     return region
 end
 
+--- Does the given cairo context have an empty clip (aka "no drawing possible")?
+local function empty_clip(cr)
+    local x, y, width, height = cr:clip_extents()
+    return width == 0 or height == 0
+end
+
+--- Draw a hierarchy to some cairo context.
+-- This function draws the widgets in this widget hierarchy to the given cairo
+-- context. The context's clip is used to skip parts that aren't visible.
+-- @param context The context in which widgets are drawn.
+-- @param cr The cairo context that is used for drawing.
+function hierarchy:draw(context, cr)
+    local widget = self:get_widget()
+    if not widget.visible then
+        return
+    end
+
+    cr:save()
+    cr:transform(self:get_matrix_to_parent())
+
+    -- Clip to the draw extents
+    cr:rectangle(self:get_draw_extents())
+    cr:clip()
+
+    -- Draw if needed
+    if not empty_clip(cr) then
+        local function call(func, extra_arg1, extra_arg2)
+            if not func then return end
+            local function error_function(err)
+                print(debug.traceback("Error while drawing widget: " .. tostring(err), 2))
+            end
+            if not extra_arg2 then
+                xpcall(function()
+                    func(widget, arg, cr, self:get_size())
+                end, error_function)
+            else
+                xpcall(function()
+                    func(widget, arg, extra_arg1, extra_arg2, cr, self:get_size())
+                end, error_function)
+            end
+        end
+
+        -- Draw the widget
+        cr:save()
+        cr:rectangle(0, 0, self:get_size())
+        cr:clip()
+        call(widget.draw)
+        cr:restore()
+
+        -- Draw its children (We already clipped to the draw extents above)
+        call(widget.before_draw_children)
+        for i, wi in ipairs(self:get_children()) do
+            call(widget.before_draw_child, i, wi:get_widget())
+            wi:draw(context, cr)
+            call(widget.after_draw_child, i, wi:get_widget())
+        end
+        call(widget.after_draw_children)
+    end
+
+    cr:restore()
+end
+
 return hierarchy
 
 -- vim: filetype=lua:expandtab:shiftwidth=4:tabstop=8:softtabstop=4:textwidth=80
