@@ -43,6 +43,7 @@
 #include <xcb/xcb_icccm.h>
 #include <xcb/xcb_event.h>
 #include <xcb/xkb.h>
+#include <xkbcommon/xkbcommon.h>
 
 #define DO_EVENT_HOOK_CALLBACK(type, xcbtype, xcbeventprefix, arraytype, match) \
     static void \
@@ -663,8 +664,7 @@ event_handle_key(xcb_key_press_event_t *ev)
     }
     else
     {
-        /* get keysym ignoring all modifiers */
-        xcb_keysym_t keysym = xcb_key_symbols_get_keysym(globalconf.keysyms, ev->detail, 0);
+        xcb_keysym_t keysym = xkb_state_key_get_one_sym(globalconf.xkb_state, ev->detail);
         client_t *c;
         if((c = client_getbywin(ev->event)))
         {
