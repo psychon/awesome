@@ -515,7 +515,7 @@ end
 function client.toggletag(target, c)
     local sel = c or capi.client.focus
     -- Check that tag and client screen are identical
-    if sel and sel.screen == tag.getscreen(target) then
+    if sel and capi.screen[sel.screen] == capi.screen[tag.getscreen(target)] then
         local tags = sel:tags()
         local index = nil;
         for i, v in ipairs(tags) do
