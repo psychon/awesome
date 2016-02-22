@@ -13,19 +13,22 @@ local tooltip = require("awful.tooltip")
 local tag = require("awful.tag")
 local beautiful = require("beautiful")
 local imagebox = require("wibox.widget.imagebox")
+local capi = {
+    screen = screen
+}
 
 local layoutbox = { mt = {} }
 
 local boxes = nil
 
 local function update(w, screen)
-    local name = layout.getname(layout.get(screen))
+    local name = layout.getname(layout.get(screen.index))
     w._layoutbox_tooltip:set_text(name or "[no name]")
     w:set_image(name and beautiful["layout_" .. name])
 end
 
 local function update_from_tag(t)
-    local screen = tag.getscreen(t)
+    local screen = capi.screen[tag.getscreen(t) or 1]
     local w = boxes[screen]
     if w then
         update(w, screen)
@@ -37,7 +40,7 @@ end
 -- @param screen The screen number that the layout will be represented for.
 -- @return An imagebox widget configured as a layoutbox.
 function layoutbox.new(screen)
-    screen = screen or 1
+    screen = capi.screen[screen or 1]
 
     -- Do we already have the update callbacks registered?
     if boxes == nil then
