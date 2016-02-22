@@ -212,10 +212,9 @@ function tag.delete(target_tag, fallback_tag)
 end
 
 --- Update the tag history.
--- @param obj Screen object.
-function tag.history.update(obj)
-    local s = obj.index
-    local curtags = tag.selectedlist(s)
+-- @param s Screen object.
+function tag.history.update(s)
+    local curtags = tag.selectedlist(s.index)
     -- create history table
     if not data.history[s] then
         data.history[s] = {}
@@ -257,9 +256,9 @@ end
 -- toggling between last two selected sets of tags. Number (eg 1) will go back
 -- to the given index in history.
 function tag.history.restore(screen, idx)
-    local s = screen or ascreen.focused()
+    local s = capi.screen[screen or ascreen.focused()]
     local i = idx or "previous"
-    local sel = tag.selectedlist(s)
+    local sel = tag.selectedlist(s.index)
     -- do nothing if history empty
     if not data.history[s] or not data.history[s][i] then return end
     -- if all tags been deleted, try next entry
@@ -281,7 +280,7 @@ function tag.history.restore(screen, idx)
     -- remove the reverted history entry
     if i ~= "previous" then table.remove(data.history[s], i) end
 
-    capi.screen[s]:emit_signal("tag::history::update")
+    s:emit_signal("tag::history::update")
 end
 
 --- Get a list of all tags on a screen
