@@ -60,7 +60,7 @@ local delayed_arrange = {}
 -- @param screen The screen number.
 -- @return The layout function.
 function layout.get(screen)
-    local t = tag.selected(screen)
+    local t = tag.selected(screen and capi.screen[screen].index)
     return tag.getproperty(t, "layout") or layout.suit.floating
 end
 
@@ -124,20 +124,20 @@ end
 --   geometry (x, y, width, height), the clients, the screen and sometime, a
 --   "geometries" table with client as keys and geometry as value
 function layout.parameters(t, screen)
-    t = t or tag.selected(screen)
+    t = t or tag.selected(screen and capi.screen[screen].index)
 
     if not t then return end
 
-    screen = tag.getscreen(t) or 1
+    screen = capi.screen[tag.getscreen(t) or 1]
 
     local p = {}
 
-    p.workarea = capi.screen[screen].workarea
+    p.workarea = screen.workarea
 
-    local useless_gap = tag.getgap(t, #client.tiled(screen))
+    local useless_gap = tag.getgap(t, #client.tiled(screen.index))
 
     -- Handle padding
-    local padding = ascreen.padding(capi.screen[screen]) or {}
+    local padding = ascreen.padding(screen) or {}
 
     p.workarea.x = p.workarea.x + (padding.left or 0) + useless_gap
 
@@ -149,9 +149,9 @@ function layout.parameters(t, screen)
     p.workarea.height = p.workarea.height - ((padding.top or 0) +
         (padding.bottom or 0) + useless_gap * 2)
 
-    p.geometry    = capi.screen[screen].geometry
-    p.clients     = client.tiled(screen)
-    p.screen      = screen
+    p.geometry    = screen.geometry
+    p.clients     = client.tiled(screen.index)
+    p.screen      = screen.index
     p.padding     = padding
     p.useless_gap = useless_gap
 
@@ -161,7 +161,9 @@ end
 --- Arrange a screen using its current layout.
 -- @param screen The screen to arrange.
 function layout.arrange(screen)
-    if not screen or delayed_arrange[screen] then return end
+    if not screen then return end
+    screen = capi.screen[screen]
+    if delayed_arrange[screen] then return end
     delayed_arrange[screen] = true
 
     timer.delayed_call(function()
@@ -181,7 +183,7 @@ function layout.arrange(screen)
             g.y = g.y + useless_gap
             c:geometry(g)
         end
-        capi.screen[screen]:emit_signal("arrange")
+        screen:emit_signal("arrange")
 
         arrange_lock = false
         delayed_arrange[screen] = nil
@@ -235,10 +237,10 @@ capi.tag.connect_signal("tagged", arrange_tag)
 
 for s = 1, capi.screen.count() do
     capi.screen[s]:connect_signal("property::workarea", function(screen)
-        layout.arrange(screen.index)
+        layout.arrange(screen)
     end)
     capi.screen[s]:connect_signal("padding", function (screen)
-        layout.arrange(screen.index)
+        layout.arrange(screen)
     end)
 end
 
