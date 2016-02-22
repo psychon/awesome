@@ -117,7 +117,7 @@ end
 
 local function taglist_update(s, w, buttons, filter, data, style, update_function)
     local tags = {}
-    for _, t in ipairs(tag.gettags(s)) do
+    for _, t in ipairs(tag.gettags(s.index)) do
         if not tag.getproperty(t, "hide") and filter(t) then
             table.insert(tags, t)
         end
@@ -153,6 +153,7 @@ end
 -- @param[opt] base_widget.squares_resize True or false to resize squares.
 -- @param base_widget.font The font.
 function taglist.new(screen, filter, buttons, style, update_function, base_widget)
+    screen = capi.screen[screen]
     local uf = update_function or common.list_update
     local w = base_widget or fixed.horizontal()
 
@@ -172,7 +173,7 @@ function taglist.new(screen, filter, buttons, style, update_function, base_widge
     if instances == nil then
         instances = {}
         local function u(s)
-            local i = instances[s]
+            local i = instances[capi.screen[s]]
             if i then
                 for _, tlist in pairs(i) do
                     tlist._do_taglist_update()
