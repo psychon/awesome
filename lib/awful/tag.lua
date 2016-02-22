@@ -138,7 +138,7 @@ end
 -- @param screen The screen number to look for a tag on. [awful.screen.focused()]
 -- @param invalids A table of tags we consider unacceptable. [selectedlist(scr)]
 function tag.find_fallback(screen, invalids)
-    local scr = screen or ascreen.focused()
+    local scr = capi.screen[screen or ascreen.focused()]
     local t = invalids or tag.selectedlist(scr)
 
     for _, v in pairs(tag.gettags(scr)) do
@@ -289,7 +289,7 @@ end
 function tag.gettags(s)
     local tags = {}
     for _, t in ipairs(root.tags()) do
-        if tag.getscreen(t) == s then
+        if capi.screen[tag.getscreen(t)] == capi.screen[s] then
             table.insert(tags, t)
         end
     end
@@ -311,7 +311,7 @@ function tag.setscreen(s, t)
         s, t = t, s
     end
 
-    s = s or ascreen.focused()
+    s = capi.screen[s or ascreen.focused()]
     local sel = tag.selected
     local old_screen = tag.getproperty(t, "screen")
     if s == old_screen then return end
@@ -353,7 +353,7 @@ end
 -- @param s Screen number.
 -- @return A table with all selected tags.
 function tag.selectedlist(s)
-    local screen = s or ascreen.focused()
+    local screen = capi.screen[s or ascreen.focused()]
     local tags = tag.gettags(screen)
     local vtags = {}
     for _, t in pairs(tags) do
@@ -664,7 +664,7 @@ function tag.viewonly(t)
     -- We need to do that in 2 operations so we avoid flickering and several tag
     -- selected at the same time.
     t.selected = true
-    capi.screen[tag.getscreen(t)]:emit_signal("tag::history::update")
+    tag.getscreen(t):emit_signal("tag::history::update")
 end
 
 --- View only a set of tags.
@@ -688,7 +688,7 @@ end
 -- @tparam tag t Tag to be toggled
 function tag.viewtoggle(t)
     t.selected = not t.selected
-    capi.screen[tag.getscreen(t)]:emit_signal("tag::history::update")
+    tag.getscreen(t):emit_signal("tag::history::update")
 end
 
 --- Get tag data table.
@@ -735,7 +735,7 @@ end
 function tag.withcurrent(c)
     local tags = {}
     for _, t in ipairs(c:tags()) do
-        if tag.getscreen(t) == c.screen then
+        if capi.screen[tag.getscreen(t)] == capi.screen[c.screen] then
             table.insert(tags, t)
         end
     end
@@ -752,7 +752,7 @@ end
 
 local function attached_connect_signal_screen(screen, sig, func)
     capi.tag.connect_signal(sig, function(_tag)
-        if tag.getscreen(_tag) == screen then
+        if capi.screen[tag.getscreen(_tag)] == capi.screen[screen] then
             func(_tag)
         end
     end)
