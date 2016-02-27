@@ -95,6 +95,7 @@ luaA_checkscreen(lua_State *L, int sidx)
         int screen = lua_tointeger(L, sidx);
         if(screen < 1 || screen > globalconf.screens.len)
             luaL_error(L, "invalid screen number: %d", screen);
+        luaA_deprecate(L, "screen objects");
         return globalconf.screens.tab[screen - 1];
     } else
         return luaA_checkudata(L, sidx, &screen_class);
@@ -599,6 +600,7 @@ luaA_screen_get_workarea(lua_State *L, screen_t *s)
 static int
 luaA_screen_count(lua_State *L)
 {
+    luaA_deprecate(L, "screen objects");
     lua_pushinteger(L, globalconf.screens.len);
     return 1;
 }
