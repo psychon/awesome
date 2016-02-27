@@ -848,9 +848,7 @@ capi.tag.add_signal("property::urgent")
 capi.tag.add_signal("property::urgent_count")
 
 capi.screen.add_signal("tag::history::update")
-for s in capi.screen.each() do
-    s:connect_signal("tag::history::update", tag.history.update)
-end
+capi.screen.connect_signal("tag::history::update", tag.history.update)
 
 function tag.mt:__call(...)
     return tag.new(...)
