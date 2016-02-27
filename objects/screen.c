@@ -133,8 +133,12 @@ screen_add(lua_State *L, int sidx)
                 return;
             }
 
+    sidx = luaA_absindex(L, sidx);
+    lua_pushvalue(L, sidx);
     luaA_object_ref(L, sidx);
     screen_array_append(&globalconf.screens, new_screen);
+    luaA_object_emit_signal(L, -1, "property::enabled", 0);
+    lua_pop(L, 1);
 }
 
 static bool
@@ -685,6 +689,7 @@ screen_class_setup(lua_State *L)
      * @signal property::workarea
      */
     signal_add(&screen_class.signals, "property::workarea");
+    signal_add(&screen_class.signals, "property::enabled");
 }
 
 // vim: filetype=c:expandtab:shiftwidth=4:tabstop=8:softtabstop=4:textwidth=80
