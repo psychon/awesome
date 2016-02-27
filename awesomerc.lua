@@ -175,6 +175,7 @@ mytasklist.buttons = awful.util.table.join(
                                               awful.client.focus.byidx(-1)
                                           end))
 
+local first = true
 for s in screen.each() do
     -- Create a promptbox for each screen
     mypromptbox[s] = awful.widget.prompt()
@@ -208,11 +209,12 @@ for s in screen.each() do
         { -- Right widgets
             layout = wibox.layout.fixed.horizontal,
             mykeyboardlayout,
-            s == 1 and wibox.widget.systray(),
+            first and wibox.widget.systray(),
             mytextclock,
             mylayoutbox[s],
         },
     }
+    first = false
 end
 -- }}}
 
