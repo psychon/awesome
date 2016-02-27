@@ -60,7 +60,7 @@ local delayed_arrange = {}
 -- @param screen The screen number.
 -- @return The layout function.
 function layout.get(screen)
-    local t = tag.selected(screen and capi.screen[screen].index)
+    local t = tag.selected(screen)
     return tag.getproperty(t, "layout") or layout.suit.floating
 end
 
@@ -124,7 +124,7 @@ end
 --   geometry (x, y, width, height), the clients, the screen and sometime, a
 --   "geometries" table with client as keys and geometry as value
 function layout.parameters(t, screen)
-    t = t or tag.selected(screen and capi.screen[screen].index)
+    t = t or tag.selected(screen)
 
     if not t then return end
 
@@ -134,7 +134,7 @@ function layout.parameters(t, screen)
 
     p.workarea = screen.workarea
 
-    local useless_gap = tag.getgap(t, #client.tiled(screen.index))
+    local useless_gap = tag.getgap(t, #client.tiled(screen))
 
     -- Handle padding
     local padding = ascreen.padding(screen) or {}
@@ -150,7 +150,7 @@ function layout.parameters(t, screen)
         (padding.bottom or 0) + useless_gap * 2)
 
     p.geometry    = screen.geometry
-    p.clients     = client.tiled(screen.index)
+    p.clients     = client.tiled(screen)
     p.screen      = screen.index
     p.padding     = padding
     p.useless_gap = useless_gap

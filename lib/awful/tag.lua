@@ -214,7 +214,7 @@ end
 --- Update the tag history.
 -- @param s Screen object.
 function tag.history.update(s)
-    local curtags = tag.selectedlist(s.index)
+    local curtags = tag.selectedlist(s)
     -- create history table
     if not data.history[s] then
         data.history[s] = {}
@@ -258,7 +258,7 @@ end
 function tag.history.restore(screen, idx)
     local s = capi.screen[screen or ascreen.focused()]
     local i = idx or "previous"
-    local sel = tag.selectedlist(s.index)
+    local sel = tag.selectedlist(s)
     -- do nothing if history empty
     if not data.history[s] or not data.history[s][i] then return end
     -- if all tags been deleted, try next entry

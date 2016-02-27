@@ -117,7 +117,7 @@ end
 
 local function taglist_update(s, w, buttons, filter, data, style, update_function)
     local tags = {}
-    for _, t in ipairs(tag.gettags(s.index)) do
+    for _, t in ipairs(tag.gettags(s)) do
         if not tag.getproperty(t, "hide") and filter(t) then
             table.insert(tags, t)
         end
