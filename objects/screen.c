@@ -603,6 +603,40 @@ luaA_screen_count(lua_State *L)
     return 1;
 }
 
+static int
+luaA_screen_next(lua_State *L)
+{
+    screen_t *s;
+    int idx;
+
+    if (lua_isnoneornil(L, 2))
+        s = NULL;
+    else
+        s = luaA_checkscreen(L, 2);
+
+    idx = screen_get_index(s);
+    if (idx >= 0 || idx < globalconf.screens.len)
+        /* No +1 needed, index starts at 1, C array at 0 */
+        luaA_pushscreen(L, globalconf.screens.tab[idx]);
+    else
+        lua_pushnil(L);
+    return 1;
+}
+
+/** Iterate over all active screens.
+ * @usage
+ * for s in screen.each() do
+ *     print("This screen exists:", s)
+ * end
+ * @function each
+ */
+static int
+luaA_screen_each(lua_State *L)
+{
+    lua_pushcfunction(L, luaA_screen_next);
+    return 1;
+}
+
 void
 screen_class_setup(lua_State *L)
 {
@@ -610,6 +644,7 @@ screen_class_setup(lua_State *L)
     {
         LUA_CLASS_METHODS(screen)
         { "count", luaA_screen_count },
+        { "each", luaA_screen_each },
         { "__index", luaA_screen_module_index },
         { "__newindex", luaA_default_newindex },
         { NULL, NULL }
