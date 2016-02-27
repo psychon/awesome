@@ -12,7 +12,8 @@ _G.awesome = {
 -- Additional hacks to load menubar
 _G.screen = {
     add_signal = function() end,
-    count = function() return 0 end
+    count = function() return 0 end,
+    each = function() return function() end end
 }
 _G.client = {
     connect_signal = function() end,

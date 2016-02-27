@@ -240,11 +240,11 @@ capi.tag.connect_signal("property::useless_gap", arrange_tag)
 capi.tag.connect_signal("property::master_fill_policy", arrange_tag)
 capi.tag.connect_signal("tagged", arrange_tag)
 
-for s = 1, capi.screen.count() do
-    capi.screen[s]:connect_signal("property::workarea", function(screen)
+for s in capi.screen.each() do
+    s:connect_signal("property::workarea", function(screen)
         layout.arrange(screen)
     end)
-    capi.screen[s]:connect_signal("padding", function (screen)
+    s:connect_signal("padding", function (screen)
         layout.arrange(screen)
     end)
 end
@@ -252,10 +252,10 @@ end
 capi.client.connect_signal("raised", function(c) layout.arrange(c.screen) end)
 capi.client.connect_signal("lowered", function(c) layout.arrange(c.screen) end)
 capi.client.connect_signal("list", function()
-                                   for screen = 1, capi.screen.count() do
-                                       layout.arrange(screen)
-                                   end
-                               end)
+    for s in capi.screen.each() do
+        layout.arrange(s)
+    end
+end)
 
 return layout
 

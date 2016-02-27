@@ -58,12 +58,11 @@ end
 -- @param x The x coordinate
 -- @param y The y coordinate
 function screen.getbycoord(x, y)
-    local s = screen[1]
-    local dist = screen.getdistance_sq(s, x, y)
-    for i = 2, capi.screen:count() do
-        local d = screen.getdistance_sq(i, x, y)
-        if d < dist then
-            s, dist = screen[i], d
+    local dist = nil
+    for s in screen.each() do
+        local d = screen.getdistance_sq(s, x, y)
+        if (not dist) or d < dist then
+            s, dist = s, d
         end
     end
     return s.index
@@ -115,8 +114,8 @@ function screen.focus_bydirection(dir, _screen)
     local sel = get_screen(_screen or screen.focused())
     if sel then
         local geomtbl = {}
-        for s = 1, capi.screen.count() do
-            geomtbl[s] = capi.screen[s].geometry
+        for s in capi.screen.each() do
+            geomtbl[s] = s.geometry
         end
         local target = util.get_rectangle_in_direction(dir, geomtbl, sel.geometry)
         if target then

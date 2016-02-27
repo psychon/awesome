@@ -546,11 +546,11 @@ end
 function client.movetoscreen(c, s)
     local sel = c or capi.client.focus
     if sel then
-        local sc = capi.screen.count()
         if not s then
-            s = sel.screen + 1
+            -- Dirty magic follows..
+            local each = capi.screen.each()
+            s = each(sel.screen) or each()
         end
-        if type(s) == "number" and s > sc then s = 1 elseif s < 1 then s = sc end
         s = get_screen(s)
         if get_screen(sel.screen) ~= s then
             local sel_is_focused = sel == capi.client.focus

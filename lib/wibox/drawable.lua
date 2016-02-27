@@ -29,14 +29,14 @@ local wallpaper = nil
 -- This is awful.screen.getbycoord() which we sadly cannot use from here (cyclic
 -- dependencies are bad!)
 local function screen_getbycoord(x, y)
-    for i = 1, screen:count() do
-        local geometry = screen[i].geometry
+    for s in screen.each() do
+        local geometry = s.geometry
         if x >= geometry.x and x < geometry.x + geometry.width
            and y >= geometry.y and y < geometry.y + geometry.height then
-            return capi.screen[i]
+            return s
         end
     end
-    return capi.screen[1]
+    return (screen.each())()
 end
 
 -- Get the widget context. This should always return the same table (if

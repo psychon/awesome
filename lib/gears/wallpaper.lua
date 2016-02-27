@@ -21,8 +21,8 @@ do
         width = geom.x + geom.width,
         height = geom.y + geom.height
     }
-    for s = 1, screen.count() do
-        local g = screen[s].geometry
+    for s in screen.each() do
+        local g = s.geometry
         root_geom.width = math.max(root_geom.width, g.x + g.width)
         root_geom.height = math.max(root_geom.height, g.y + g.height)
     end
