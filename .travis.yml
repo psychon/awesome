@@ -1,21 +1,58 @@
-sudo: required
-dist: trusty
+sudo: false
 language: c
 env:
   matrix:
     # Note: luarocks does not work with Lua 5.0.
     - LUA=5.1 LGIVER=      LUANAME=lua5.1
-    - LUA=5.2 LGIVER=      LUANAME=lua5.2 BUILD_APIDOC=true DO_COVERAGE=true
-    - LUA=5.2 LGIVER=0.7.1 LUANAME=lua5.2
+    #- LUA=5.2 LGIVER=      LUANAME=lua5.2 BUILD_APIDOC=true DO_COVERAGE=true
+    #- LUA=5.2 LGIVER=0.7.1 LUANAME=lua5.2
     # luajit: requires --lua-suffix=jit-2.0.0-beta9 in Ubuntu precise.
     # Later versions seem to provide a `luajit` symlink, so `jit` would be enough.
     # See http://packages.ubuntu.com/precise/i386/luajit/filelist.
-    - LUA=5.1 LGIVER=      LUANAME=luajit-5.1 INSTALL_PKGS="luajit" LUAINCLUDE=/usr/include/luajit-2.0 LUAROCKS_ARGS=--lua-suffix=jit-2.0.2
+    #- LUA=5.1 LGIVER=      LUANAME=luajit-5.1 INSTALL_PKGS="luajit" LUAINCLUDE=/usr/include/luajit-2.0 LUAROCKS_ARGS=--lua-suffix=jit-2.0.2
     # Lua 5.3 isn't available in Ubuntu trusty, so some magic below installs it
-    - LUA=5.3 LGIVER=      LUANAME=lua5.3 LUALIBRARY=/usr/lib/liblua.so
+    #- LUA=5.3 LGIVER=      LUANAME=lua5.3 LUALIBRARY=/usr/lib/liblua.so
   global:
     # Secure token to push to gh-pages.
     - secure: "LZxt9559+V3qJMdVgmKW4RYTt8ZINooex/qsnoEJUtZloj/eFNG4COT2z6a2yeH2tKWzknCsmV9nLPJiNEA2KLcyqDhjFQvJwKmsBuhGUmLyeQgfenjweorRjO8NT18X1SAEUXAMnClPu+OeTDs4BAuVn5foGZ7xpcRg2E+j2mc="
+
+addons:
+  apt:
+    packages:
+    # Build dependencies.
+    # See also `apt-cache showsrc awesome | grep -E '^(Version|Build-Depends)'`.
+    - libcairo2-dev
+    - xmlto
+    - asciidoc
+    - libpango1.0-dev
+    - libxcb-xtest0-dev
+    - libxcb-icccm4-dev
+    - libxcb-randr0-dev
+    - libxcb-keysyms1-dev
+    - libxcb-xinerama0-dev
+    - libdbus-1-dev
+    - libxdg-basedir-dev
+    - libstartup-notification0-dev
+    - imagemagick
+    - libxcb1-dev
+    - libxcb-shape0-dev
+    - libxcb-util0-dev
+    - libx11-xcb-dev
+    - libxcb-cursor-dev
+    - libxcb-xkb-dev
+    - libxkbcommon-dev
+    - libxkbcommon-x11-dev
+    - gir1.2-pango-1.0
+    - libgirepository1.0-dev
+    # Deps for functional tests.
+    - dbus-x11
+    - xterm
+    - xdotool
+    - xterm
+    - xvfb
+    - rxvt-unicode
+    # Lua stuff
+    - luarocks
 
 before_install:
   - if [ -z $LUAINCLUDE ]; then LUAINCLUDE=/usr/include/${LUANAME}; fi
@@ -23,19 +60,6 @@ before_install:
   - cmake --version
 
 install:
-  # Travis boilerplate: the apt-get cache might be out of date.
-  - travis_retry sudo apt-get update -qq
-
-  # Do not install recommended packages with apt-get.
-  - echo 'APT::Install-Recommends "false";' | sudo tee /etc/apt/apt.conf.d/no-recommends
-
-  # Install build dependencies.
-  # See also `apt-cache showsrc awesome | grep -E '^(Version|Build-Depends)'`.
-  - sudo apt-get install -y libcairo2-dev xmlto asciidoc libpango1.0-dev libxcb-xtest0-dev libxcb-icccm4-dev libxcb-randr0-dev libxcb-keysyms1-dev libxcb-xinerama0-dev libdbus-1-dev libxdg-basedir-dev libstartup-notification0-dev imagemagick libxcb1-dev libxcb-shape0-dev libxcb-util0-dev libx11-xcb-dev libxcb-cursor-dev libxcb-xkb-dev libxkbcommon-dev libxkbcommon-x11-dev
-
-  # Deps for functional tests.
-  - sudo apt-get install -y dbus-x11 xterm xdotool xterm xvfb rxvt-unicode
-
   # Install Lua (per env).
   # Note that Lua 5.3 is installed by hand, because not available in trusty
   - |
@@ -53,38 +77,29 @@ install:
   # "Create" /usr/bin/lua if needed (Yup, this is a bad hack)
   - if [ ! -e "/usr/bin/lua" ]; then sudo ln -s /usr/bin/luajit /usr/bin/lua; fi
 
-  # Install luarocks (for the selected Lua version).
-  - travis_retry wget https://keplerproject.github.io/luarocks/releases/luarocks-2.2.2.tar.gz
-  - tar xf luarocks-2.2.2.tar.gz
-  - cd luarocks-2.2.2
-  - ./configure --lua-version=$LUA --with-lua-include=${LUAINCLUDE} ${LUAROCKS_ARGS}
-  - make build
-  - sudo make install
-  - cd ..
-
   # lgi.
-  - sudo apt-get install -y gir1.2-pango-1.0 libgirepository1.0-dev
-  - travis_retry sudo luarocks install lgi $LGIVER
+  - travis_retry luarocks --local install lgi $LGIVER
 
   # Install busted for "make check-unit".
-  - travis_retry sudo luarocks install busted
+  - travis_retry luarocks --local install busted
   # Install luacheck for "make luacheck".
-  - travis_retry sudo luarocks install luacheck
+  - travis_retry luarocks --local install luacheck
 
   # Install ldoc for building docs.
-  - travis_retry sudo luarocks install ldoc
-  - travis_retry sudo luarocks install lua-discount
+  - travis_retry luarocks --local install ldoc
+  - travis_retry luarocks --local install lua-discount
 
   # Instal luacov-coveralls for code coverage testing.
-  - if [ "$DO_COVERAGE" = "true" ]; then sudo luarocks install luacov-coveralls; fi
+  - if [ "$DO_COVERAGE" = "true" ]; then luarocks --local install luacov-coveralls; fi
 
   # Determine custom version.
   - export AWESOME_VERSION="${TRAVIS_BRANCH}-g$(git rev-parse --short HEAD)"
   - 'if [ "$TRAVIS_PULL_REQUEST" != false ]; then AWESOME_VERSION="${AWESOME_VERSION}-PR${TRAVIS_PULL_REQUEST}"; fi'
 
 script:
-  - export CMAKE_ARGS="-DLUA_LIBRARY=${LUALIBRARY} -DLUA_INCLUDE_DIR=${LUAINCLUDE} -D OVERRIDE_VERSION=$AWESOME_VERSION"
-  - make && sudo env PATH=$PATH make install && awesome --version && make check
+  - export CMAKE_ARGS="-DLUA_LIBRARY=${LUALIBRARY} -DLUA_INCLUDE_DIR=${LUAINCLUDE} -D OVERRIDE_VERSION=$AWESOME_VERSION -DCMAKE_INSTALL_PREFIX=/tmp/awesome-install"
+  - export PATH=/tmp/awesome-install/bin:$PATH
+  - make && make install && awesome --version && make check
   - |
     if [ "$DO_COVERAGE" = "true" ]; then
         make check-coverage || exit 1;
