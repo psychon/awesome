@@ -183,6 +183,16 @@ screen_wipe(screen_t *s)
     screen_output_array_wipe(&s->outputs);
 }
 
+/** Check if a screen is valid */
+static bool
+screen_checker(screen_t *s)
+{
+    foreach(screen, globalconf.screens)
+        if(*screen == s)
+            return true;
+    return false;
+}
+
 /** Get a screen argument from the lua stack */
 screen_t *
 luaA_checkscreen(lua_State *L, int sidx)
@@ -931,7 +941,7 @@ screen_class_setup(lua_State *L)
     luaA_class_setup(L, &screen_class, "screen", NULL,
                      (lua_class_allocator_t) screen_new,
                      (lua_class_collector_t) screen_wipe,
-                     NULL,
+                     (lua_class_checker_t) screen_checker,
                      luaA_class_index_miss_property, luaA_class_newindex_miss_property,
                      screen_methods, screen_meta);
     luaA_class_add_property(&screen_class, "geometry",
