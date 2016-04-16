@@ -153,6 +153,9 @@ screen.connect_for_each_screen(function(s)
         bottom_right = {},
     }
 end)
+capi.screen.connect_signal("removed", function(s)
+    naughty.notifications[s] = nil -- TODO: Actually destroy notifications
+end)
 
 --- Notification state
 function naughty.is_suspended()

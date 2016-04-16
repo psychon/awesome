@@ -192,7 +192,7 @@ function tasklist.new(screen, filter, buttons, style, update_function, base_widg
         data[c] = nil
     end
     if instances == nil then
-        instances = {}
+        instances = setmetatable({}, { __mode = 'k' })
         local function us(s)
             local i = instances[get_screen(s)]
             if i then

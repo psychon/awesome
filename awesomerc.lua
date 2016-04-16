@@ -537,3 +537,39 @@ end)
 client.connect_signal("focus", function(c) c.border_color = beautiful.border_focus end)
 client.connect_signal("unfocus", function(c) c.border_color = beautiful.border_normal end)
 -- }}}
+
+screen.connect_signal("removed", function(s)
+	local other_screen = nil
+	for os in screen do
+		if os ~= s then
+			other_screen = os
+		end
+	end
+	for _, t in pairs(tags[s]) do
+		t:delete(tags[other_screen][1])
+	end
+	tags[s] = nil
+	mypromptbox[s] = nil
+	mylayoutbox[s] = nil
+	mytaglist[s] = nil
+	mytasklist[s] = nil
+	mywibox[s] = nil
+end)
+
+local traverse = require("traverse")
+local s = setmetatable({screen.fake_add(50, 50, 500, 500)}, { __mode = "v" })
+gears.timer.start_new(1, function()
+	s[1]:fake_remove()
+	gears.timer.start_new(1, function()
+		for _=1, 2 do
+			collectgarbage("collect")
+			print("num alive in table:", #s, "total:", screen.instances())
+		end
+		traverse.new():do_all()
+		if true then
+			awesome.quit()
+		else
+			return true
+		end
+	end)
+end)
