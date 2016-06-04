@@ -1,4 +1,5 @@
 script:
+        - true
         - |
           echo $TRAVIS_TEST_RESULT
           true
