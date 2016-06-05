@@ -99,7 +99,7 @@ script:
         cd "$BUILD_IN_DIR"
         cmake $CMAKE_ARGS "$SOURCE_DIRECTORY"
     fi
-  - make && sudo env PATH=$PATH make install && awesome --version && make check
+  - make && sudo env PATH=$PATH make install && awesome --version
   - |
     if [ "$DO_COVERAGE" = "true" ]; then
         make check-coverage || exit 1;
@@ -112,4 +112,5 @@ after_success:
   - if [ "$BUILD_APIDOC" = "true" ]; then build-utils/travis-apidoc.sh; fi
   # Push code coverage information
   - find | grep luacov
+  - cat build/luacov.stats.out
   - if [ "$DO_COVERAGE" = "true" ]; then bash <(curl -s https://codecov.io/bash) -f build/luacov.stats.out; fi
