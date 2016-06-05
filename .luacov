@@ -5,6 +5,11 @@ local source = '@CMAKE_SOURCE_DIR@'
 local binary = '@CMAKE_BINARY_DIR@'
 local lib_dir = binary .. '/lib'
 
+local at = '@'
+if source == at .. 'CMAKE_SOURCE_DIR' .. at then
+    error("This must be run from the build dir, not the source dir")
+end
+
 local function escape_pattern(str)
     return string.gsub(str, "%W", "%%%1")
 end

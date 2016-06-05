@@ -83,7 +83,7 @@ install:
   - travis_retry sudo luarocks install ldoc
   - travis_retry sudo luarocks install lua-discount
 
-  # Instal luacov-coveralls for code coverage testing.
+  # Install luacov for code coverage testing.
   - if [ "$DO_COVERAGE" = "true" ]; then sudo luarocks install luacov; else export DO_COVERAGE=0; fi
 
   # Determine custom version.

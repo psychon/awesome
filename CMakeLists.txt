@@ -361,7 +361,7 @@ endif()
 # {{{ Tests
 set(CHECK_TARGETS check-integration)
 add_custom_target(check-integration
-    "${CMAKE_SOURCE_DIR}/tests/run.sh"
+    sh -c "CMAKE_BINARY_DIR='${CMAKE_BINARY_DIR}' ${CMAKE_SOURCE_DIR}/tests/run.sh"
     WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
     COMMENT "Running integration tests"
     VERBATIM)
@@ -378,7 +378,6 @@ if(BUSTED_EXECUTABLE)
 
     # Same as above, but with --coverage argument
     add_custom_target(check-coverage
-        "BUILD_DIRECTORY=${CMAKE_BINARY_DIR}/"
         ${BUSTED_EXECUTABLE} "--helper=${CMAKE_SOURCE_DIR}/spec/preload.lua"
         "--lpath=${CMAKE_BINARY_DIR}/lib/?.lua;${CMAKE_BINARY_DIR}/lib/?/init.lua;spec/?.lua"
         "--coverage"
