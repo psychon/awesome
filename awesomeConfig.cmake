@@ -326,7 +326,8 @@ set(AWESOME_CONFIGURE_FILES
     config.h
     docs/config.ld
     awesomerc.lua
-    awesome-version-internal.h)
+    awesome-version-internal.h
+    .luacov)
 
 foreach(file ${AWESOME_CONFIGURE_FILES})
     configure_file(${SOURCE_DIR}/${file}

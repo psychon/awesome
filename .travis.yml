@@ -103,14 +103,14 @@ script:
   - |
     if [ "$DO_COVERAGE" = "true" ]; then
         make check-coverage || exit 1;
-        sed -i "1 i\\require('luacov.runner')('"$PWD"/.luacov')" build/awesomerc.lua || exit 1
-        BUILD_DIRECTORY="" tests/run.sh || exit 1
+        sed -i "1 i\\require('luacov.runner')('"$PWD"/build/.luacov')" build/awesomerc.lua || exit 1
+        tests/run.sh || exit 1
     fi
 
 after_success:
   # Push updated API docs for relevant branches, e.g. non-PRs builds on master.
   - if [ "$BUILD_APIDOC" = "true" ]; then build-utils/travis-apidoc.sh; fi
   # Why do I need this? The codecov example doesn't do this
-  - if [ "$DO_COVERAGE" = "true" ]; then BUILD_DIRECTORY="$(pwd)/$(readlink build)/" SOURCE_DIRECTORY="$(pwd)/" luacov; fi
+  - if [ "$DO_COVERAGE" = "true" ]; then ( cd build && luacov ); fi
   # Push code coverage information
   - if [ "$DO_COVERAGE" = "true" ]; then bash <(curl -s https://codecov.io/bash); fi
