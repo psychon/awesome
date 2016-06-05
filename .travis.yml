@@ -84,7 +84,7 @@ install:
   - travis_retry sudo luarocks install lua-discount
 
   # Instal luacov-coveralls for code coverage testing.
-  - if [ "$DO_COVERAGE" = "true" ]; then sudo luarocks install luacov-coveralls; else export DO_COVERAGE=0; fi
+  - if [ "$DO_COVERAGE" = "true" ]; then sudo luarocks install luacov; else export DO_COVERAGE=0; fi
 
   # Determine custom version.
   - export AWESOME_VERSION="${TRAVIS_BRANCH}-g$(git rev-parse --short HEAD)"
@@ -111,4 +111,4 @@ after_success:
   # Push updated API docs for relevant branches, e.g. non-PRs builds on master.
   - if [ "$BUILD_APIDOC" = "true" ]; then build-utils/travis-apidoc.sh; fi
   # Push code coverage information
-  - if [ "$DO_COVERAGE" = "true" ]; then BUILD_DIRECTORY="$(pwd)/$(readlink build)/" SOURCE_DIRECTORY="$(pwd)/" luacov-coveralls --verbose --merge; fi
+  - if [ "$DO_COVERAGE" = "true" ]; then BUILD_DIRECTORY="$(pwd)/$(readlink build)/" SOURCE_DIRECTORY="$(pwd)/" bash <(curl -s https://codecov.io/bash); fi
