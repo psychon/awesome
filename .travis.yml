@@ -111,4 +111,5 @@ after_success:
   # Push updated API docs for relevant branches, e.g. non-PRs builds on master.
   - if [ "$BUILD_APIDOC" = "true" ]; then build-utils/travis-apidoc.sh; fi
   # Push code coverage information
-  - if [ "$DO_COVERAGE" = "true" ]; then cd build; bash <(curl -s https://codecov.io/bash); fi
+  - find | grep luacov
+  - if [ "$DO_COVERAGE" = "true" ]; then bash <(curl -s https://codecov.io/bash) -f build/luacov.stats.out; fi
