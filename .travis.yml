@@ -93,14 +93,6 @@ install:
 script:
   - export CMAKE_ARGS="-DLUA_LIBRARY=${LUALIBRARY} -DLUA_INCLUDE_DIR=${LUAINCLUDE} -D OVERRIDE_VERSION=$AWESOME_VERSION -D DO_COVERAGE=${DO_COVERAGE}"
   - |
-    if [ "$TRAVIS_TEST_RESULT" = 0 ]; then
-      if [ "$DO_COVERAGE" = "true" ]; then
-        (cd build && luacov) || exit 1
-        bash <(curl -s https://codecov.io/bash) -F samples || exit 1
-        rm build/luacov.stats.out
-      fi
-    fi
-  - |
     if [ -n "$BUILD_IN_DIR" ]; then
         SOURCE_DIRECTORY="$PWD"
         mkdir "$BUILD_IN_DIR"
@@ -108,6 +100,14 @@ script:
         cmake $CMAKE_ARGS "$SOURCE_DIRECTORY"
     fi
   - make && sudo env PATH=$PATH make install && awesome --version
+  - |
+    if [ "$TRAVIS_TEST_RESULT" = 0 ]; then
+      if [ "$DO_COVERAGE" = "true" ]; then
+        (cd build && luacov) || exit 1
+        bash <(curl -s https://codecov.io/bash) -F samples || exit 1
+        rm build/luacov.stats.out
+      fi
+    fi
   - |
     if [ "$TRAVIS_TEST_RESULT" = 0 ]; then
       if [ "$DO_COVERAGE" = "true" ]; then
