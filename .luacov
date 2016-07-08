@@ -5,6 +5,8 @@ local build = os.getenv("BUILD_DIRECTORY") or error("$BUILD_DIRECTORY not set")
 local lib_dir = os.getenv("AWESOME_LIB_DIR") or build .. "lib/"
 local source = os.getenv("SOURCE_DIRECTORY")
 
+print("lib", lib_dir, "source", source)
+
 local function escape_pattern(str)
     return string.gsub(str, "%W", "%%%1")
 end
