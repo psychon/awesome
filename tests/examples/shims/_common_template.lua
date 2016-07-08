@@ -14,9 +14,11 @@ return function(_, _, luacovpath)
     assert(awesome and root and tag and screen and client and mouse)
 
     -- Use luacov if we should do so
+    print("XXX", type(luacovpath), luacovpath)
     if luacovpath then
         require("luacov.runner")(luacovpath)
     end
+    print("XXX Still alive")
 
     -- Silence debug warnings
     require("gears.debug").print_warning = function() end
