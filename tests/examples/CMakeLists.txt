@@ -182,6 +182,7 @@ function(run_test test_path namespace escaped_content)
         )
     endif()
 
+    message(STATUS "${TEST_OUTPUT}")
     # If there is an output, assume it is relevant and add it to the
     # documentation under the image.
     if(NOT ${TEST_OUTPUT} STREQUAL "")
