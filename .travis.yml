@@ -115,7 +115,7 @@ script:
         cd "$BUILD_IN_DIR"
         cmake $CMAKE_ARGS "$SOURCE_DIRECTORY"
     fi
-  - make && sudo env PATH=$PATH make install && awesome --version
+  - SOURCE_DIRECTORY="PinkFluffyUnicorn" make && sudo env PATH=$PATH make install && awesome --version
   - |
     if [ "$TRAVIS_TEST_RESULT" = 0 ]; then
       do_codecov samples
