@@ -3,7 +3,7 @@ dist: trusty
 language: c
 env:
   matrix:
-    - LUA=5.2 LUANAME=lua5.2 BUILD_APIDOC=true DO_COVERAGE=coveralls
+          #- LUA=5.2 LUANAME=lua5.2 BUILD_APIDOC=true DO_COVERAGE=coveralls
     # Note: luarocks does not work with Lua 5.0.
     #- LUA=5.1 LUANAME=lua5.1 BUILD_IN_DIR=/tmp/awesome-build
     # luajit: installed from source.
@@ -101,6 +101,8 @@ install:
         ls -l build/luacov.stats.out
         cat build/luacov.stats.out
         rm build/luacov.stats.out
+        find -name luacov.stats.out
+        exit 1
       fi
     }
 
