@@ -108,9 +108,9 @@ install:
 
 script:
   - export CMAKE_ARGS="-DLUA_LIBRARY=${LUALIBRARY} -DLUA_INCLUDE_DIR=${LUAINCLUDE} -D OVERRIDE_VERSION=$AWESOME_VERSION -D DO_COVERAGE=${DO_COVERAGE}"
+  - export SOURCE_DIRECTORY="$PWD"
   - |
     if [ -n "$BUILD_IN_DIR" ]; then
-        export SOURCE_DIRECTORY="$PWD"
         mkdir "$BUILD_IN_DIR"
         cd "$BUILD_IN_DIR"
         cmake $CMAKE_ARGS "$SOURCE_DIRECTORY"
