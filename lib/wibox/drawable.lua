@@ -24,11 +24,10 @@ local matrix = require("gears.matrix")
 local hierarchy = require("wibox.hierarchy")
 local unpack = unpack or table.unpack -- luacheck: globals unpack (compatibility with Lua 5.1)
 
-local drawables = setmetatable({}, { __mode = 'k' })
+local drawables_force_redraw = setmetatable({}, { __mode = 'k' })
+local drawables_check_screen_change = setmetatable({}, { __mode = 'k' })
 
--- Get the widget context. This should always return the same table (if
--- possible), so that our draw and fit caches can work efficiently.
-local function get_widget_context(self)
+local function get_screen(self)
     local geom = self.drawable:geometry()
 
     local sgeos = {}
@@ -37,8 +36,13 @@ local function get_widget_context(self)
         sgeos[s] = s.geometry
     end
 
-    local s = grect.get_by_coord(sgeos, geom.x, geom.y) or capi.screen.primary
+    return grect.get_by_coord(sgeos, geom.x, geom.y) or capi.screen.primary
+end
 
+-- Get the widget context. This should always return the same table (if
+-- possible), so that our draw and fit caches can work efficiently.
+local function get_widget_context(self)
+    local s = get_screen(self)
     local context = self._widget_context
     local dpi = beautiful.xresources.get_dpi(s)
     if (not context) or context.screen ~= s or context.dpi ~= dpi then
@@ -353,8 +357,25 @@ function drawable.new(d, widget_context_skeleton, drawable_name)
         ret._need_complete_repaint = true
         ret:draw()
     end
-    drawables[ret._do_complete_repaint] = true
+    drawables_force_redraw[ret._do_complete_repaint] = true
     d:connect_signal("property::surface", ret._do_complete_repaint)
+
+    -- Do a complete redraw if we are moved to a different screen
+    ret._check_screen_change = function()
+        local context = ret._widget_context
+        if not context or not context.screen then
+            return
+        end
+        local s = get_screen(ret)
+        if context.screen ~= s then
+            print("Forcing complete repaint because of move to a different screen", ret)
+            print("(If you see this message, then this patch actually did something (useful?))")
+            ret._do_complete_repaint()
+        end
+    end
+    drawables_check_screen_change[ret._check_screen_change] = true
+    ret.drawable:connect_signal("property::x", ret._check_screen_change)
+    ret.drawable:connect_signal("property::y", ret._check_screen_change)
 
     -- Currently we aren't redrawing on move (signals not connected).
     -- :set_bg() will later recompute this.
@@ -423,9 +444,18 @@ end
 
 -- Redraw all drawables when the wallpaper changes
 capi.awesome.connect_signal("wallpaper_changed", function()
-    for k in pairs(drawables) do
+    for k in pairs(drawables_force_redraw) do
         k()
     end
+end)
+
+-- Check if a drawable's screen changed when a screen goes away
+capi.screen.connect_signal("removed", function()
+    timer.delayed_call(function()
+        for k in pairs(drawables_check_screen_change) do
+            k()
+        end
+    end)
 end)
 
 return setmetatable(drawable, { __call = function(_, ...) return drawable.new(...) end })
