@@ -83,7 +83,9 @@ install:
 
   # lgi.
   - sudo apt-get install -y gir1.2-pango-1.0 libgirepository1.0-dev
-  - travis_retry sudo luarocks install lgi $LGIVER
+  - git clone https://github.com/psychon/lgi.git -b use_marshalling_stack
+  - ( cd lgi ; make all LUA_CFLAGS="-I${LUAINCLUDE}" ; for x in 5.1 5.2 5.3 ; do sudo make install LUA_VERSION=$x ; done )
+    #- travis_retry sudo luarocks install lgi $LGIVER
 
   # Install busted for "make check-unit".
   - travis_retry sudo luarocks install busted
